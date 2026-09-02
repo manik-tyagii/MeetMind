@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { User } from "../models/User.js";
-import { generateTokens, setTokenCookies, clearTokenCookies } from "../utils/token.js";
+import {
+  generateTokens,
+  setTokenCookies,
+  clearTokenCookies,
+} from "../utils/token.js";
 import { formatUserResponse } from "../utils/userResponse.js";
 import { getGeneratedAvatarUrl } from "../utils/avatar.js";
 import jwt from "jsonwebtoken";
@@ -8,13 +12,19 @@ import { AuthenticatedRequest } from "../middleware/authMiddleware.js";
 
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { name, email, password } = req.body;
-    
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User with this email already exists" });
+      return res
+        .status(400)
+        .json({ message: "User with this email already exists" });
     }
 
     const user = new User({
@@ -26,8 +36,11 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     });
     await user.save();
 
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id.toString(), user.role);
-    setTokenCookies(res, accessToken, newRefreshToken);
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(
+      user._id.toString(),
+      user.role,
+    );
+    setTokenCookies(res, accessToken, newRefreshToken, req);
 
     return res.status(201).json({
       message: "User registered successfully",
@@ -38,7 +51,11 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { email, password } = req.body;
 
@@ -48,7 +65,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     if (user.isActive === false) {
-      return res.status(403).json({ message: "Your account is deactivated. Please contact support." });
+      return res
+        .status(403)
+        .json({
+          message: "Your account is deactivated. Please contact support.",
+        });
     }
 
     const isMatch = await (user as any).comparePassword(password);
@@ -56,8 +77,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id.toString(), user.role);
-    setTokenCookies(res, accessToken, newRefreshToken);
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(
+      user._id.toString(),
+      user.role,
+    );
+    setTokenCookies(res, accessToken, newRefreshToken, req);
 
     return res.json({
       message: "Logged in successfully",
@@ -68,16 +92,24 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
-export const logout = async (req: Request, res: Response, next: NextFunction) => {
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    clearTokenCookies(res);
+    clearTokenCookies(res, req);
     return res.json({ message: "Logged out successfully" });
   } catch (error) {
     next(error);
   }
 };
 
-export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+export const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const refresh = req.cookies?.refreshToken;
     if (!refresh) {
@@ -88,8 +120,10 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     try {
       decoded = jwt.verify(refresh, JWT_REFRESH_SECRET);
     } catch (err) {
-      clearTokenCookies(res);
-      return res.status(401).json({ message: "Refresh token invalid or expired" });
+      clearTokenCookies(res, req);
+      return res
+        .status(401)
+        .json({ message: "Refresh token invalid or expired" });
     }
 
     const user = await User.findById(decoded.id);
@@ -98,15 +132,15 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     }
 
     if (user.isActive === false) {
-      clearTokenCookies(res);
-      return res.status(403).json({ message: "Your account has been deactivated." });
+      clearTokenCookies(res, req);
+      return res
+        .status(403)
+        .json({ message: "Your account has been deactivated." });
     }
 
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokens(
-      user._id.toString(),
-      user.role
-    );
-    setTokenCookies(res, newAccessToken, newRefreshToken);
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      generateTokens(user._id.toString(), user.role);
+    setTokenCookies(res, newAccessToken, newRefreshToken, req);
 
     return res.json({
       message: "Tokens refreshed successfully",
@@ -117,7 +151,11 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const getProfile = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const getProfile = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authenticated" });
@@ -132,7 +170,11 @@ export const getProfile = async (req: AuthenticatedRequest, res: Response, next:
   }
 };
 
-export const updateProfile = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const updateProfile = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Not authenticated" });

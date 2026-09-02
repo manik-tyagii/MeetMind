@@ -1,12 +1,24 @@
 import jwt from "jsonwebtoken";
-import { Response } from "express";
+import { Request, Response } from "express";
 import { env } from "../config/env.js";
 
 const JWT_SECRET = env.JWT_SECRET;
 const JWT_REFRESH_SECRET = env.JWT_REFRESH_SECRET;
 
-const cookieBaseOptions = () => {
-  const isProduction = env.NODE_ENV === "production";
+const cookieBaseOptions = (req?: Request) => {
+  const forwardedProto = req?.headers["x-forwarded-proto"];
+  const protocol = Array.isArray(forwardedProto)
+    ? forwardedProto[0]
+    : forwardedProto;
+  const isHttpsRequest =
+    !!req &&
+    (req.secure ||
+      req.protocol === "https" ||
+      protocol === "https" ||
+      protocol?.split(",")[0]?.trim() === "https");
+
+  const isProduction = env.NODE_ENV === "production" || isHttpsRequest;
+
   return {
     httpOnly: true,
     secure: isProduction,
@@ -17,12 +29,19 @@ const cookieBaseOptions = () => {
 
 export const generateTokens = (id: string, role: string) => {
   const accessToken = jwt.sign({ id, role }, JWT_SECRET, { expiresIn: "15m" });
-  const refreshToken = jwt.sign({ id, role }, JWT_REFRESH_SECRET, { expiresIn: "7d" });
+  const refreshToken = jwt.sign({ id, role }, JWT_REFRESH_SECRET, {
+    expiresIn: "7d",
+  });
   return { accessToken, refreshToken };
 };
 
-export const setTokenCookies = (res: Response, accessToken: string, refreshToken: string) => {
-  const base = cookieBaseOptions();
+export const setTokenCookies = (
+  res: Response,
+  accessToken: string,
+  refreshToken: string,
+  req?: Request,
+) => {
+  const base = cookieBaseOptions(req);
 
   res.cookie("accessToken", accessToken, {
     ...base,
@@ -35,8 +54,8 @@ export const setTokenCookies = (res: Response, accessToken: string, refreshToken
   });
 };
 
-export const clearTokenCookies = (res: Response) => {
-  const base = cookieBaseOptions();
+export const clearTokenCookies = (res: Response, req?: Request) => {
+  const base = cookieBaseOptions(req);
   res.clearCookie("accessToken", base);
   res.clearCookie("refreshToken", base);
 };
