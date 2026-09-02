@@ -22,7 +22,9 @@ export interface AvatarUpdatePayload {
   email: string;
 }
 
-const authenticateSocket = (socket: Socket): { id: string; role: string } | null => {
+const authenticateSocket = (
+  socket: Socket,
+): { id: string; role: string } | null => {
   try {
     const rawCookie = socket.handshake.headers.cookie;
     if (!rawCookie) return null;
@@ -31,7 +33,10 @@ const authenticateSocket = (socket: Socket): { id: string; role: string } | null
     const token = cookies.accessToken;
     if (!token) return null;
 
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string; role: string };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as {
+      id: string;
+      role: string;
+    };
     return decoded;
   } catch {
     return null;
@@ -41,7 +46,11 @@ const authenticateSocket = (socket: Socket): { id: string; role: string } | null
 export const initSocket = (httpServer: HttpServer): Server => {
   io = new Server(httpServer, {
     cors: {
-      origin: env.CLIENT_URL,
+      origin: [
+        env.CLIENT_URL,
+        "https://meet-mind-three.vercel.app",
+        "http://localhost:5173",
+      ],
       credentials: true,
     },
     path: "/socket.io",
