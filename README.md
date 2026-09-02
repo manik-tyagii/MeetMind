@@ -6,6 +6,8 @@
 
   <p>Transforming disorganized meetings into actionable insights with generative AI.</p>
 
+  - **Backend API:** [https://meetainotes.onrender.com](https://meetainotes.onrender.com)
+
   <div>
     <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
     <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
