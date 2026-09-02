@@ -1,10 +1,15 @@
-import { io, Socket } from 'socket.io-client';
-import type { User } from '../types';
+import { io, Socket } from "socket.io-client";
+import type { User } from "../types";
 
-const configuredSocketURL = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '');
-const SOCKET_URL = configuredSocketURL || (
-  import.meta.env.DEV ? 'http://localhost:5000' : 'https://meetainotes.onrender.com'
+const configuredSocketURL = import.meta.env.VITE_API_URL?.replace(
+  /\/api\/?$/,
+  "",
 );
+const SOCKET_URL =
+  configuredSocketURL ||
+  (import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "https://meetainotes.onrender.com");
 
 let socket: Socket | null = null;
 
@@ -21,8 +26,8 @@ export const connectSocket = (): Socket => {
 
   socket = io(SOCKET_URL, {
     withCredentials: true,
-    path: '/socket.io',
-    transports: ['websocket', 'polling'],
+    path: "/socket.io",
+    transports: ["websocket", "polling"],
     autoConnect: true,
   });
 
@@ -37,24 +42,24 @@ export const disconnectSocket = (): void => {
 };
 
 export const onAvatarUpdated = (
-  handler: (payload: AvatarSyncPayload) => void
+  handler: (payload: AvatarSyncPayload) => void,
 ): (() => void) => {
   const client = connectSocket();
-  client.on('user:avatar:updated', handler);
+  client.on("user:avatar:updated", handler);
   return () => {
-    client.off('user:avatar:updated', handler);
+    client.off("user:avatar:updated", handler);
   };
 };
 
 export const applyAvatarSyncToUser = (
   current: User | null,
-  payload: AvatarSyncPayload
+  payload: AvatarSyncPayload,
 ): User | null => {
   if (!current || current.id !== payload.userId) return current;
   return {
     ...current,
     avatar: payload.avatar,
-    avatarType: payload.avatarType as User['avatarType'],
+    avatarType: payload.avatarType as User["avatarType"],
     name: payload.name,
   };
 };
