@@ -13,7 +13,8 @@ const isHostedFrontend = (requestOrigin: string): boolean => {
     const { protocol, hostname } = new URL(requestOrigin);
     return (
       protocol === "https:" &&
-      (hostname.endsWith(".vercel.app") || hostname.endsWith(".netlify.app"))
+      (/^[a-z0-9-]+\.vercel\.app$/.test(hostname) ||
+        /^[a-z0-9-]+\.netlify\.app$/.test(hostname))
     );
   } catch {
     return false;
