@@ -3,6 +3,7 @@ import { env } from "./env.js";
 const allowedOrigins = [
   env.CLIENT_URL,
   "https://meet-mind-three.vercel.app",
+  "https://meet-mind-tan-theta.vercel.app",
   "http://localhost:5173",
 ];
 
