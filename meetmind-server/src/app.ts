@@ -9,7 +9,7 @@ import userRoutes from "./routes/userRoutes.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 import { helmetMiddleware } from "./middleware/security.js";
 import { globalLimiter } from "./middleware/rateLimiters.js";
-import { env } from "./config/env.js";
+import { corsOrigin } from "./config/cors.js";
 
 const app = express();
 
@@ -19,11 +19,7 @@ app.use(helmetMiddleware);
 
 app.use(
   cors({
-    origin: [
-      env.CLIENT_URL,
-      "https://meet-mind-three.vercel.app",
-      "http://localhost:5173",
-    ],
+    origin: corsOrigin,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

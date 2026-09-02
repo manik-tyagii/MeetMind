@@ -1,16 +1,26 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const configuredBaseURL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const normalizedBaseURL = configuredBaseURL.replace(/\/+$/, "");
+const baseURL = normalizedBaseURL.endsWith("/api")
+  ? normalizedBaseURL
+  : `${normalizedBaseURL}/api`;
 
 export const api = axios.create({
   baseURL,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-const AUTH_SKIP_REFRESH = ['/auth/login', '/auth/register', '/auth/refresh-token', '/auth/reset-password'];
+const AUTH_SKIP_REFRESH = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh-token",
+  "/auth/reset-password",
+];
 
 let isRefreshing = false;
 let refreshQueue: Array<(success: boolean) => void> = [];
@@ -28,11 +38,20 @@ export const sessionHandlers: {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-    const requestUrl = original?.url ?? '';
-    const isAuthRequest = AUTH_SKIP_REFRESH.some((path) => requestUrl.includes(path));
+    const original = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
+    const requestUrl = original?.url ?? "";
+    const isAuthRequest = AUTH_SKIP_REFRESH.some((path) =>
+      requestUrl.includes(path),
+    );
 
-    if (error.response?.status !== 401 || !original || original._retry || isAuthRequest) {
+    if (
+      error.response?.status !== 401 ||
+      !original ||
+      original._retry ||
+      isAuthRequest
+    ) {
       return Promise.reject(error);
     }
 
@@ -52,7 +71,7 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      await api.post('/auth/refresh-token');
+      await api.post("/auth/refresh-token");
       processQueue(true);
       sessionHandlers.onSessionRestored?.();
       return api(original);
@@ -63,5 +82,5 @@ api.interceptors.response.use(
     } finally {
       isRefreshing = false;
     }
-  }
+  },
 );

@@ -2,6 +2,7 @@ import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
+import { corsOrigin } from "../config/cors.js";
 
 const parseCookies = (header?: string): Record<string, string> => {
   if (!header) return {};
@@ -46,11 +47,7 @@ const authenticateSocket = (
 export const initSocket = (httpServer: HttpServer): Server => {
   io = new Server(httpServer, {
     cors: {
-      origin: [
-        env.CLIENT_URL,
-        "https://meet-mind-three.vercel.app",
-        "http://localhost:5173",
-      ],
+      origin: corsOrigin,
       credentials: true,
     },
     path: "/socket.io",
