@@ -4,6 +4,7 @@ const allowedOrigins = [
   env.CLIENT_URL,
   "https://meet-mind-three.vercel.app",
   "https://meet-mind-tan-theta.vercel.app",
+  "https://meetainotes.netlify.app",
   "http://localhost:5173",
 ];
 

@@ -1,7 +1,10 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 
 const configuredBaseURL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? "http://localhost:5000/api"
+    : "https://meetainotes.onrender.com/api");
 const normalizedBaseURL = configuredBaseURL.replace(/\/+$/, "");
 const baseURL = normalizedBaseURL.endsWith("/api")
   ? normalizedBaseURL

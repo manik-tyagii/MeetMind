@@ -1,7 +1,10 @@
 import { io, Socket } from 'socket.io-client';
 import type { User } from '../types';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
+const configuredSocketURL = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '');
+const SOCKET_URL = configuredSocketURL || (
+  import.meta.env.DEV ? 'http://localhost:5000' : 'https://meetainotes.onrender.com'
+);
 
 let socket: Socket | null = null;
 
