@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npm run build --prefix meetmind-client",
+  "outputDirectory": "meetmind-client/dist",
+  "installCommand": "npm install --prefix meetmind-client",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
