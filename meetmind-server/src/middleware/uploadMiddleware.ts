@@ -1,5 +1,5 @@
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
+import CloudinaryStorage from "multer-storage-cloudinary";
 import { Request, Response, NextFunction } from "express";
 import { cloudinary, isCloudinaryConfigured } from "../config/cloudinary.js";
 import { AVATAR_FOLDER } from "../utils/avatar.js";
@@ -35,7 +35,9 @@ const buildCloudinaryUpload = () => {
       resource_type: "image",
       allowed_formats: ["jpg", "jpeg", "png", "webp"],
       public_id: `user-${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, "")}`,
-      transformation: [{ width: 400, height: 400, crop: "fill", gravity: "auto" }],
+      transformation: [
+        { width: 400, height: 400, crop: "fill", gravity: "auto" },
+      ],
     }),
   });
 
@@ -49,12 +51,13 @@ const buildCloudinaryUpload = () => {
 export const avatarUploadMiddleware = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (!isCloudinaryConfigured()) {
     return res.status(503).json({
       success: false,
-      message: "Avatar upload is not configured. Please set Cloudinary environment variables.",
+      message:
+        "Avatar upload is not configured. Please set Cloudinary environment variables.",
     });
   }
 
@@ -65,7 +68,7 @@ export const avatarUploadMiddleware = (
 export const assertCloudinaryReady = (
   _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (!isCloudinaryConfigured()) {
     return res.status(503).json({
@@ -80,7 +83,7 @@ export const handleMulterError = (
   err: Error,
   _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
